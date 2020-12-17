@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score
 from scipy import stats
 from sklearn.model_selection import RandomizedSearchCV
 import os
-
+# Set the GPU
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
