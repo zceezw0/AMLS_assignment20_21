@@ -1,33 +1,36 @@
 # Import this python file for preprocessing extra dataset
 import preprocess
-
 from sklearn import svm
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from scipy import stats
 from sklearn.model_selection import RandomizedSearchCV
+import os
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 ## Define class for Task A1
 class SVM_A1:
 	def __init__(self):
 		self.param_RBF = {'C': stats.uniform(0.1, 10),
-						 'gamma': stats.uniform(0.001, 0.01),
-						 'kernel': ['rbf']}
+						  'gamma': stats.uniform(0.001, 0.01),
+						  'kernel': ['rbf']}
 		self.param_poly = {'C': stats.uniform(0.1, 10),
-						  'coef0': stats.uniform(1, 5),
-						  'degree': stats.uniform(1, 5),
-						  'kernel': ['poly']}
+						   'coef0': stats.uniform(1, 5),
+						   'degree': stats.uniform(1, 5),
+						   'kernel': ['poly']}
 		self.param_linear = {'C': stats.uniform(0.1, 10),
-							'kernel': ['linear']}
-
+							 'kernel': ['linear']}
 
 	def SVC_randomSearch(self, X, y, param_kernel):
 		# number of jobs = -1 mean using all processors
 		rand_search = RandomizedSearchCV(SVC(), param_kernel, n_iter=10, n_jobs=-1, refit=True, verbose=3)
 		rand_search.fit(X, y)
-		
+
 		return rand_search.best_params_, rand_search.best_estimator_
-						
+
 	def train(self, X, y, test_X, test_Y):
 		# Obtaining optimum hyperparameters and classifier for different kernel
 		print('Tuning optimum hyper parameter for SVM with polynomial kernel...')
@@ -41,15 +44,15 @@ class SVM_A1:
 
 		# Predict with the best linear SVM classifier
 		pred1 = clf_linearSVC.predict(test_X)
-		score1 = accuracy_score(test_Y,pred1)
+		score1 = accuracy_score(test_Y, pred1)
 
 		# Predict with the best polynomial SVM classifier
 		pred2 = clf_polySVC.predict(test_X)
-		score2 = accuracy_score(test_Y,pred2)
+		score2 = accuracy_score(test_Y, pred2)
 
 		# Predict with the best RBF SVM classifier
 		pred3 = clf_rbfSVC.predict(test_X)
-		score3 = accuracy_score(test_Y,pred3)
+		score3 = accuracy_score(test_Y, pred3)
 
 		# Return the score as a dictionary
 		train_acc = {'Linear SVM': score1, 'Polynomial SVM': score2, 'RBF SVM': score3}
@@ -61,15 +64,15 @@ class SVM_A1:
 	def test(self, classifier, X, y):
 		# Predict with the best linear SVM classifier
 		pred1 = classifier[0].predict(X)
-		score1 = accuracy_score(y,pred1)
+		score1 = accuracy_score(y, pred1)
 
 		# Predict with the best polynomial SVM classifier
 		pred2 = classifier[1].predict(X)
-		score2 = accuracy_score(y,pred2)
+		score2 = accuracy_score(y, pred2)
 
 		# Predict with the best RBF SVM classifier
 		pred3 = classifier[2].predict(X)
-		score3 = accuracy_score(y,pred3)
+		score3 = accuracy_score(y, pred3)
 
 		# Return the score as a dictionary
 		test_acc = {'Linear SVM': score1, 'Polynomial SVM': score2, 'RBF SVM': score3}
