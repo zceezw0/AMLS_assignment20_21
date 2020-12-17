@@ -1,29 +1,32 @@
-import os 
 import numpy as np
 from keras.preprocessing import image
 import cv2
 import dlib
+import os
+# Set the GPU
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-# extract the dataset and label path for use Later 
+# extract the dataset and label path for use Later
 global basedir, image_paths, target_size
 
 AMLS_dir = os.path.abspath(os.curdir)
-basedir = os.path.join(AMLS_dir,'Datasets')
-celeba_dir = os.path.join(basedir,'celeba')
-images_dir = os.path.join(celeba_dir,'img')
+basedir = os.path.join(AMLS_dir, 'Datasets')
+celeba_dir = os.path.join(basedir, 'celeba')
+images_dir = os.path.join(celeba_dir, 'img')
 labels_filename = 'labels.csv'
 
-celeba_test_dir = os.path.join(basedir,'celeba_test')
-images_test_dir = os.path.join(celeba_test_dir,'img')
+celeba_test_dir = os.path.join(basedir, 'celeba_test')
+images_test_dir = os.path.join(celeba_test_dir, 'img')
 labels_test_filename = 'labels.csv'
 
-cartoon_dir = os.path.join(basedir,'cartoon_set')
-cartoon_images_dir = os.path.join(cartoon_dir,'img')
-labels_path = os.path.join(cartoon_dir,'labels.csv')
+cartoon_dir = os.path.join(basedir, 'cartoon_set')
+cartoon_images_dir = os.path.join(cartoon_dir, 'img')
+labels_path = os.path.join(cartoon_dir, 'labels.csv')
 
-cartoon_test_dir = os.path.join(basedir,'cartoon_set_test')
-cartoon_images_test_dir = os.path.join(cartoon_test_dir,'img')
-labels_test_path = os.path.join(cartoon_test_dir,'labels.csv')
+cartoon_test_dir = os.path.join(basedir, 'cartoon_set_test')
+cartoon_images_test_dir = os.path.join(cartoon_test_dir, 'img')
+labels_test_path = os.path.join(cartoon_test_dir, 'labels.csv')
 
 A2_dir = os.path.join(AMLS_dir, 'A2')
 model_A2_path = os.path.join(A2_dir, 'VGGNet.h5')
@@ -36,12 +39,13 @@ model_B2_path = os.path.join(B2_dir, 'ResNet.h5')
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
 
-def shape_to_np(shape, dtype="int"):
 
+def shape_to_np(shape, dtype="int"):
     coords = np.zeros((shape.num_parts, 2), dtype=dtype)
     for i in range(0, shape.num_parts):
         coords[i] = (shape.part(i).x, shape.part(i).y)
     return coords
+
 
 def rect_to_bb(rect):
     # take a bounding predicted by dlib and convert it
@@ -54,6 +58,7 @@ def rect_to_bb(rect):
 
     # return a tuple of (x, y, w, h)
     return (x, y, w, h)
+
 
 def run_dlib_shape(image):
     # in this function we load the image, detect the landmarks of the face, and then return the image and the landmarks
@@ -92,6 +97,7 @@ def run_dlib_shape(image):
 
     return dlibout, resized_image
 
+
 def extract_features_labels(images_dir, celeba_dir, labels_filename):
     """
     This funtion extracts the landmarks features for all images in the folder 'dataset/celeba'.
@@ -106,33 +112,32 @@ def extract_features_labels(images_dir, celeba_dir, labels_filename):
     target_size = None
     labels_file = open(os.path.join(celeba_dir, labels_filename), 'r')
     lines = labels_file.readlines()
-    gender_labels = {line.split('\t')[0] : int(line.split('\t')[2]) for line in lines[1:]}
-    f = open('log.txt','w');
+    gender_labels = {line.split('\t')[0]: int(line.split('\t')[2]) for line in lines[1:]}
+    f = open('log.txt', 'w');
     for gender in gender_labels:
-        f.write(str(gender)+ ':' +str(gender_labels[gender])+'\n')    
+        f.write(str(gender) + ':' + str(gender_labels[gender]) + '\n')
     f.close()
     if os.path.isdir(images_dir):
         all_features = []
         all_labels = []
         error_img = []
         for img_path in image_paths:
-            file_name= img_path.split('.')[0].split('/')[-1]
-            
+            file_name = img_path.split('.')[0].split('/')[-1]
+
             # load image
             img = image.img_to_array(
                 image.load_img(img_path,
                                target_size=target_size,
                                interpolation='bicubic'))
             features, _ = run_dlib_shape(img)
-            #print('1')
+            # print('1')
             if features is not None:
                 all_features.append(features)
-                #print(file_name)
+                # print(file_name)
                 all_labels.append(gender_labels[file_name])
             else:
                 error_img.append(file_name)
-                
 
     landmark_features = np.array(all_features)
-    gender_labels = (np.array(all_labels) + 1)/2 # simply converts the -1 into 0, so male=0 and female=1
+    gender_labels = (np.array(all_labels) + 1) / 2  # simply converts the -1 into 0, so male=0 and female=1
     return landmark_features, gender_labels, error_img
