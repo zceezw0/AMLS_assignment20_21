@@ -17,6 +17,11 @@ from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, GlobalAverage
 
 from sklearn.metrics import accuracy_score
 
+# Set the GPU
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
+
 ## Define class for Task A2
 class CNN_A2:
 	# Callback function to interrupt the overfitting model
