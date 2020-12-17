@@ -8,8 +8,6 @@ Required Python3
 
 **Environment configuration**
 
-OS: Ubuntu 18.04
-
 bash command:
 
 * conda create -n amls-tf2.0 python=3.6.9
